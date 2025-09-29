@@ -55,20 +55,12 @@ export class I95DevApi implements ICredentialType {
 			description: 'The environment type',
 		},
 		{
-			displayName: 'Endpoint Code of Magento',
+			displayName: 'Endpoint Code',
 			name: 'endpointCode',
 			type: 'string',
 			default: '',
 			required: true,
-			description: 'Your i95Dev Endpoint Code for Magento',
-		},
-		{
-			displayName: 'Endpoint Code of BC',
-			name: 'endpointCodeBC',
-			type: 'string',
-			default: '',
-			required: true,
-			description: 'Your i95Dev Endpoint Code for Business Central',
+			description: 'Your i95Dev Endpoint Code',
 		},
 		{
 			displayName: 'Base URL',

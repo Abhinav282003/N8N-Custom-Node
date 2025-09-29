@@ -5,7 +5,6 @@ import {
 	INodeTypeDescription,
 	INodeProperties,
 	NodeConnectionType,
-	IHttpRequestOptions,
 } from 'n8n-workflow';
 
 export class I95Dev implements INodeType {
@@ -30,17 +29,42 @@ export class I95Dev implements INodeType {
 		],
 		properties: [
 			{
+				displayName: 'Environment Name',
+				name: 'environment',
+				type: 'string',
+				default: 'N8N',
+				required: false,
+				description: 'Business Central environment name (e.g., N8N, Production, Sandbox)',
+			},
+			{
+				displayName: 'Customer Data (JSON)',
+				name: 'customerDataJson',
+				type: 'json',
+				displayOptions: {
+					show: {
+						operation: ['createCustomer'],
+						resource: ['bcactions'],
+					},
+				},
+				default: '{\n  "displayName": "John Doe",\n  "type": "Person",\n  "email": "john.doe@example.com",\n  "phoneNumber": "+1-555-0123"\n}',
+				description: 'Customer data in JSON format for creation',
+			},
+			{
 				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
 				noDataExpression: true,
 				options: [
 					{
-						name: 'ERP Actions',
-						value: 'erpactions',
+						name: 'eCommerce',
+						value: 'ecommerce',
+					},
+					{
+						name: 'BC Actions',
+						value: 'bcactions',
 					},
 				],
-				default: 'erpactions',
+				default: 'ecommerce',
 			},
 			{
 				displayName: 'Operation',
@@ -49,14 +73,148 @@ export class I95Dev implements INodeType {
 				noDataExpression: true,
 				displayOptions: {
 					show: {
-						resource: ['erpactions'],
+						resource: ['ecommerce'],
+					},
+				},
+				options: [
+					{
+						name: 'Pull Product Data',
+						value: 'pullProductData',
+						action: 'Pull product data from i95Dev API',
+					},
+					{
+						name: 'Pull Customer Data',
+						value: 'pullCustomerData',
+						action: 'Pull customer data from i95Dev API',
+					},
+					{
+						name: 'Pull Sales Order Data',
+						value: 'pullSalesOrderData',
+						action: 'Pull sales order data from i95Dev API',
+					},
+					{
+						name: 'Pull Invoice Data',
+						value: 'pullInvoiceData',
+						action: 'Pull invoice data from i95Dev API',
+					},
+					{
+						name: 'Pull Shipment Data',
+						value: 'pullShipmentData',
+						action: 'Pull shipment data from i95Dev API',
+					},
+					{
+						name: 'Pull Inventory Data',
+						value: 'pullInventoryData',
+						action: 'Pull inventory data from i95Dev API',
+					},
+					{
+						name: 'Push Product Data',
+						value: 'pushProductData',
+						action: 'Push product data to i95Dev API',
+					},
+					{
+						name: 'Push Customer Data',
+						value: 'pushCustomerData',
+						action: 'Push customer data to i95Dev API',
+					},
+					{
+						name: 'Push Sales Order Data',
+						value: 'pushSalesOrderData',
+						action: 'Push sales order data to i95Dev API',
+					},
+					{
+						name: 'Push Invoice Data',
+						value: 'pushInvoiceData',
+						action: 'Push invoice data to i95Dev API',
+					},
+					{
+						name: 'Push Shipment Data',
+						value: 'pushShipmentData',
+						action: 'Push shipment data to i95Dev API',
+					},
+					{
+						name: 'Push Inventory Data',
+						value: 'pushInventoryData',
+						action: 'Push inventory data to i95Dev API',
+					},
+					{
+						name: 'Pull Product Response',
+						value: 'pullProductResponse',
+						action: 'Pull product response from message queue',
+					},
+					{
+						name: 'Pull Customer Response',
+						value: 'pullCustomerResponse',
+						action: 'Pull customer response from message queue',
+					},
+					{
+						name: 'Pull Sales Order Response',
+						value: 'pullSalesOrderResponse',
+						action: 'Pull sales order response from message queue',
+					},
+					{
+						name: 'Pull Invoice Response',
+						value: 'pullInvoiceResponse',
+						action: 'Pull invoice response from message queue',
+					},
+					{
+						name: 'Pull Shipment Response',
+						value: 'pullShipmentResponse',
+						action: 'Pull shipment response from message queue',
+					},
+					{
+						name: 'Pull Inventory Response',
+						value: 'pullInventoryResponse',
+						action: 'Pull inventory response from message queue',
+					},
+					{
+						name: 'Push Product Response',
+						value: 'pushProductResponse',
+						action: 'Push product response to message queue',
+					},
+					{
+						name: 'Push Customer Response',
+						value: 'pushCustomerResponse',
+						action: 'Push customer response to message queue',
+					},
+					{
+						name: 'Push Sales Order Response',
+						value: 'pushSalesOrderResponse',
+						action: 'Push sales order response to message queue',
+					},
+					{
+						name: 'Push Invoice Response',
+						value: 'pushInvoiceResponse',
+						action: 'Push invoice response to message queue',
+					},
+					{
+						name: 'Push Shipment Response',
+						value: 'pushShipmentResponse',
+						action: 'Push shipment response to message queue',
+					},
+					{
+						name: 'Push Inventory Response',
+						value: 'pushInventoryResponse',
+						action: 'Push inventory response to message queue',
+					},
+				],
+				default: 'pullProductData',
+			},
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: {
+					show: {
+						resource: ['bcactions'],
 					},
 				},
 				options: [
 					{
 						name: 'Create Customer',
 						value: 'createCustomer',
-						action: 'Create Customer in BC',
+						action: 'Create customer in Business Central',
 					},
 				],
 				default: 'createCustomer',
@@ -67,25 +225,117 @@ export class I95Dev implements INodeType {
 				type: 'number',
 				displayOptions: {
 					show: {
-						operation: ['createCustomer'],
-						resource: ['erpactions'],
+						operation: ['pullProductData', 'pullCustomerData', 'pullSalesOrderData', 'pullInvoiceData', 'pullShipmentData', 'pullInventoryData', 'pushProductData', 'pushCustomerData', 'pushSalesOrderData', 'pushInvoiceData', 'pushShipmentData', 'pushInventoryData', 'pullProductResponse', 'pullCustomerResponse', 'pullSalesOrderResponse', 'pullInvoiceResponse', 'pullShipmentResponse', 'pullInventoryResponse', 'pushProductResponse', 'pushCustomerResponse', 'pushSalesOrderResponse', 'pushInvoiceResponse', 'pushShipmentResponse', 'pushInventoryResponse'],
+						resource: ['ecommerce'],
 					},
 				},
 				default: 5,
-				description: 'Number of records to process in each packet',
+				description: 'Number of records to pull/push in each packet',
+			},
+			{
+				displayName: 'Request Data',
+				name: 'requestData',
+				type: 'json',
+				displayOptions: {
+					show: {
+						operation: ['pullProductData', 'pullCustomerData', 'pullSalesOrderData', 'pullInvoiceData', 'pullShipmentData', 'pullInventoryData'],
+						resource: ['ecommerce'],
+					},
+				},
+				default: '[]',
+				description: 'Additional request data (JSON array)',
 			},
 			{
 				displayName: 'Type',
-				name: 'addDataType',
+				name: 'pullDataType',
 				type: 'string',
 				displayOptions: {
 					show: {
-						operation: ['createCustomer'],
-						resource: ['erpactions'],
+						operation: ['pullProductData', 'pullCustomerData', 'pullSalesOrderData', 'pullInvoiceData', 'pullShipmentData', 'pullInventoryData'],
+						resource: ['ecommerce'],
 					},
 				},
 				default: '',
-				description: 'Optional type field for create customer data operation',
+				description: 'Optional type field for pull data operation',
+			},
+			{
+				displayName: 'Request Data (JSON)',
+				name: 'pushRequestData',
+				type: 'json',
+				displayOptions: {
+					show: {
+						operation: ['pushProductData', 'pushCustomerData', 'pushSalesOrderData', 'pushInvoiceData', 'pushShipmentData', 'pushInventoryData'],
+						resource: ['ecommerce'],
+					},
+				},
+				default: '[{"TargetId":"C00180","SourceId":"16","MagentoId":null,"Reference":"16","MessageId":null,"Message":null,"Status":null,"InputData":"{\\"sourceId\\":\\"16\\",\\"targetCustomerId\\":\\"C00180\\"}"}]',
+				description: 'Request data array for push operation (JSON format)',
+			},
+			{
+				displayName: 'Type',
+				name: 'pushType',
+				type: 'string',
+				displayOptions: {
+					show: {
+						operation: ['pushProductData', 'pushCustomerData', 'pushSalesOrderData', 'pushInvoiceData', 'pushShipmentData', 'pushInventoryData'],
+						resource: ['ecommerce'],
+					},
+				},
+				default: '',
+				placeholder: 'null or specific type',
+				description: 'Optional type field for push operation',
+			},
+			{
+				displayName: 'Request Data (JSON)',
+				name: 'pullResponseRequestData',
+				type: 'json',
+				displayOptions: {
+					show: {
+						operation: ['pullProductResponse', 'pullCustomerResponse', 'pullSalesOrderResponse', 'pullInvoiceResponse', 'pullShipmentResponse', 'pullInventoryResponse'],
+						resource: ['ecommerce'],
+					},
+				},
+				default: '[{"sourceId":"string","targetId":"string","reference":"string","message":"string","result":true,"inputData":"string","messageId":0,"statusId":0,"lastSyncTime":"2025-08-22T06:56:37.387Z"}]',
+				description: 'Request data array for pull response operation (JSON format)',
+			},
+			{
+				displayName: 'Type',
+				name: 'pullResponseType',
+				type: 'string',
+				displayOptions: {
+					show: {
+						operation: ['pullProductResponse', 'pullCustomerResponse', 'pullSalesOrderResponse', 'pullInvoiceResponse', 'pullShipmentResponse', 'pullInventoryResponse'],
+						resource: ['ecommerce'],
+					},
+				},
+				default: '',
+				description: 'Optional type field for pull response operation',
+			},
+			{
+				displayName: 'Request Data (JSON)',
+				name: 'pushResponseRequestData',
+				type: 'json',
+				displayOptions: {
+					show: {
+						operation: ['pushProductResponse', 'pushCustomerResponse', 'pushSalesOrderResponse', 'pushInvoiceResponse', 'pushShipmentResponse', 'pushInventoryResponse'],
+						resource: ['ecommerce'],
+					},
+				},
+				default: '[{"sourceId":"string","targetId":"string","reference":"string","message":"string","result":true,"inputData":"string","messageId":0,"statusId":0,"lastSyncTime":"2025-08-22T07:25:48.426Z"}]',
+				description: 'Request data array for push response operation (JSON format)',
+			},
+			{
+				displayName: 'Type',
+				name: 'pushResponseType',
+				type: 'string',
+				displayOptions: {
+					show: {
+						operation: ['pushProductResponse', 'pushCustomerResponse', 'pushSalesOrderResponse', 'pushInvoiceResponse', 'pushShipmentResponse', 'pushInventoryResponse'],
+						resource: ['ecommerce'],
+					},
+				},
+				default: '',
+				description: 'Optional type field for push response operation',
 			},
 		],
 	};
@@ -101,493 +351,544 @@ export class I95Dev implements INodeType {
 			try {
 				let responseData: any = {};
 
-				if (resource === 'erpactions') {
-					if (operation === 'createCustomer') {
+				if (resource === 'ecommerce') {
+					if (['pullProductData', 'pullCustomerData', 'pullSalesOrderData', 'pullInvoiceData', 'pullShipmentData', 'pullInventoryData'].includes(operation)) {
+						// Determine data type based on operation
+						let dataType = '';
+						switch (operation) {
+							case 'pullProductData': dataType = 'Product'; break;
+							case 'pullCustomerData': dataType = 'Customer'; break;
+							case 'pullSalesOrderData': dataType = 'SalesOrder'; break;
+							case 'pullInvoiceData': dataType = 'Invoice'; break;
+							case 'pullShipmentData': dataType = 'Shipment'; break;
+							case 'pullInventoryData': dataType = 'Inventory'; break;
+						}
+
+						// Execute pull data operation inline
+						const credentials = await this.getCredentials('i95DevApi');
+						const packetSize = this.getNodeParameter('packetSize', i) as number;
+						const requestDataString = this.getNodeParameter('requestData', i) as string;
+						const pullDataType = this.getNodeParameter('pullDataType', i) as string;
+						
+						let requestData = [];
 						try {
-							// Function to transform i95Dev customer data to Business Central format
-							function transformCustomerData(sourceData: any): any {
-								try {
-									// Type definitions for better type safety
-									type IncomingAddress = {
-										firstName?: string;
-										lastName?: string;
-										postcode?: string;
-										regionId?: string;
-										city?: string;
-										countryId?: string;
-										street?: string;
-										street2?: string;
-										telephone?: string;
-										isDefaultBilling?: boolean;
-										isDefaultShipping?: boolean;
-									};
+							requestData = JSON.parse(requestDataString);
+						} catch (error) {
+							requestData = [];
+						}
 
-									type IncomingPayload = {
-										sourceId?: string;
-										targetCustomerId?: string | null;
-										targetId?: string | null;
-										email?: string;
-										firstName?: string;
-										lastName?: string;
-										reference?: string;
-										addresses?: IncomingAddress[];
-										origin?: string;
-									};
+						try {
+							// Step 1: Get Bearer Token using Refresh Token
+							const tokenResponse = await this.helpers.httpRequest({
+								method: 'POST',
+								url: `${credentials.baseUrl}/api/client/Token`,
+								headers: {
+									'Content-Type': 'application/json',
+								},
+								body: {
+									refreshToken: credentials.refreshToken,
+								},
+								json: true,
+							});
 
-									type TargetPayload = {
-										displayName: string;
-										type: "Company";
-										addressLine1: string;
-										city: string;
-										state: string;
-										country: string;
-										postalCode: string;
-										phoneNumber: string;
-										email: string;
-										website: string;
-										taxLiable: boolean;
-									};
+							const bearerToken = tokenResponse.accessToken.token;
 
-									function mapIncomingToTarget(input: IncomingPayload): TargetPayload {
-										const displayName = `${input.firstName ?? ""} ${input.lastName ?? ""}`.trim();
-
-										const addresses = input.addresses ?? [];
-										const addr =
-											addresses.find(a => a.isDefaultBilling) ??
-											addresses.find(a => a.isDefaultShipping) ??
-											addresses[0] ?? {};
-
-										const sanitizePhone = (p?: string) => (p ? p.replace(/[^\d+]/g, "") : "");
-										const normalizeWebsite = (origin?: string) => {
-											if (!origin) return "";
-											if (/^https?:\/\//i.test(origin)) return origin;
-											if (/\./.test(origin) && !origin.includes(" ")) {
-												return `https://${origin}`;
-											}
-											return `https://${origin}.com`;
-										};
-
-										return {
-											displayName: displayName || "",
-											type: "Company",
-											addressLine1: addr.street ?? "",
-											city: addr.city ?? "",
-											state: addr.regionId ?? "",
-											country: addr.countryId ?? "",
-											postalCode: addr.postcode ?? "",
-											phoneNumber: sanitizePhone(addr.telephone),
-											email: input.email ?? "",
-											website: normalizeWebsite(input.origin),
-											taxLiable: true
-										};
-									}
-
-									// Handle both single object and array of objects
-									const customers = Array.isArray(sourceData) ? sourceData : [sourceData];
-									
-									return customers.map((customer: any) => {
-										// Access the actual customer data - inputData might be a JSON string
-										let customerData: IncomingPayload;
-										
-										console.log('Raw customer object:', JSON.stringify(customer, null, 2));
-										
-										if (customer.inputData) {
-											// If inputData is a string, parse it as JSON
-											if (typeof customer.inputData === 'string') {
-												try {
-													customerData = JSON.parse(customer.inputData);
-													console.log('Parsed inputData from string:', JSON.stringify(customerData, null, 2));
-												} catch (parseError) {
-													console.log('Failed to parse inputData string:', customer.inputData);
-													customerData = customer.inputData;
-												}
-											} else {
-												customerData = customer.inputData;
-												console.log('Using inputData object directly:', JSON.stringify(customerData, null, 2));
-											}
-										} else {
-											customerData = customer;
-											console.log('Using customer object directly:', JSON.stringify(customerData, null, 2));
-										}
-										
-										console.log('Final customerData for mapping:', JSON.stringify(customerData, null, 2));
-										
-										// Use the new mapping function
-										const transformedCustomer = mapIncomingToTarget(customerData);
-										
-										console.log('Transformed Customer:', JSON.stringify(transformedCustomer, null, 2));
-										
-										return transformedCustomer;
-									});
-									
-								} catch (error) {
-									throw new Error(`Data transformation failed: ${(error as Error).message}`);
-								}
-							}
-
-							// Get credentials and parameters
-							const credentials = await this.getCredentials('i95DevApi');
-							const packetSize = this.getNodeParameter('packetSize', i) as number;
-							
-							// Use empty array as default requestData since parameter was removed
-							const requestData = [];
-							
-							// First, pull the customer data from i95Dev
-							const dataType = 'Customer';
-							
-// Step 1: Get Bearer Token using Refresh Token
-const tokenRequestPayload: IHttpRequestOptions = {
-  method: 'POST',
-  url: `${credentials.baseUrl}/api/client/Token`,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: {
-    refreshToken: credentials.refreshToken,
-  },
-  json: true,
-};
-console.log('🔹 Token Request Payload:', JSON.stringify(tokenRequestPayload, null, 2));
-
-const tokenResponse = await this.helpers.httpRequest(tokenRequestPayload);
-console.log('✅ Token Response:', JSON.stringify(tokenResponse, null, 2));
-
-const bearerToken = tokenResponse?.accessToken?.token;
-// Step 2: Get Scheduler ID
-const schedulerRequestPayload: IHttpRequestOptions = {
-  method: 'POST',
-  url: `${credentials.baseUrl}/api/Index`,
-  headers: {
-    Authorization: `Bearer ${bearerToken}`,
-    'Content-Type': 'application/json',
-  },
-  body: {
-    context: {
-      clientId: credentials.clientId,
-      subscriptionKey: credentials.subscriptionKey,
-      instanceType: credentials.instanceType,
-      schedulerType: 'PullData',
-      requestType: 'Source',
-      endpointCode: credentials.endpointCode,
-    },
-  },
-  json: true,
-};
-console.log('🔹 Scheduler Request Payload:', JSON.stringify(schedulerRequestPayload, null, 2));
-
-const schedulerResponse = await this.helpers.httpRequest(schedulerRequestPayload);
-console.log('✅ Scheduler Response:', JSON.stringify(schedulerResponse, null, 2));
-
-const schedulerId = schedulerResponse?.schedulerId;
-console.log('📌 Extracted Scheduler ID:', schedulerId);
-
-
-
-// Step 3: Pull Customer Data from i95Dev
-const pullRequestBody = {
-	Context: {
-		ClientId: credentials.clientId,
-		SubscriptionKey: credentials.subscriptionKey,
-		InstanceType: credentials.instanceType,
-		EndpointCode: credentials.endpointCodeBC,
-		isNotEncrypted: true,
-		SchedulerType: 'PullData',
-		RequestType: 'Source',
-		SchedulerId: schedulerId,
-	},
-	RequestData: [],
-	PacketSize: packetSize,
-	type: null,
-};
-
-const pullRequestPayload: IHttpRequestOptions = {
-	method: 'POST',
-	url: `${credentials.baseUrl}/api/${dataType}/PullData`,
-	headers: {
-		Authorization: `Bearer ${bearerToken}`,
-		'Content-Type': 'application/json',
-	},
-	body: pullRequestBody,
-	json: true,
-};
-
-console.log('🔹 Pull Request Payload:', JSON.stringify(pullRequestPayload, null, 2));
-
-const pullResponse = await this.helpers.httpRequest(pullRequestPayload);
-
-console.log('✅ Pull Response:', JSON.stringify(pullResponse, null, 2));
-
-
-							// Step 4: Transform the pulled data to Business Central format
-							let transformedCustomers = [];
-							console.log('Pull Response:', JSON.stringify(pullResponse, null, 2)); // Debug log
-							
-							// Handle different response formats from i95Dev API
-							let customerData = null;
-							if (pullResponse) {
-								// Check various possible response structures
-								if (Array.isArray(pullResponse)) {
-									customerData = pullResponse;
-								} else if (pullResponse.resultData && Array.isArray(pullResponse.resultData)) {
-									customerData = pullResponse.resultData;
-								} else if (pullResponse.data && Array.isArray(pullResponse.data)) {
-									customerData = pullResponse.data;
-								} else if (pullResponse.result && Array.isArray(pullResponse.result)) {
-									customerData = pullResponse.result;
-								} else if (pullResponse.customers && Array.isArray(pullResponse.customers)) {
-									customerData = pullResponse.customers;
-								} else if (pullResponse.items && Array.isArray(pullResponse.items)) {
-									customerData = pullResponse.items;
-								} else if (typeof pullResponse === 'object') {
-									// If it's a single customer object, wrap it in an array
-									customerData = [pullResponse];
-								}
-							}
-							
-							if (customerData && customerData.length > 0) {
-								transformedCustomers = transformCustomerData(customerData);
-							} else {
-								// Provide more detailed error information
-								responseData = {
-									success: false,
-									message: 'No customer data received from i95Dev API',
-									pullResponse: pullResponse,
-									pullRequestBody: pullRequestBody,
-									debug: {
-										responseType: typeof pullResponse,
-										isArray: Array.isArray(pullResponse),
-										hasData: pullResponse?.data ? 'yes' : 'no',
-										hasResult: pullResponse?.result ? 'yes' : 'no',
-										hasCustomers: pullResponse?.customers ? 'yes' : 'no',
-										hasItems: pullResponse?.items ? 'yes' : 'no',
+							// Step 2: Get Scheduler ID
+							const schedulerResponse = await this.helpers.httpRequest({
+								method: 'POST',
+								url: `${credentials.baseUrl}/api/Index`,
+								headers: {
+									'Authorization': `Bearer ${bearerToken}`,
+									'Content-Type': 'application/json',
+								},
+								body: {
+									context: {
+										clientId: credentials.clientId,
+										subscriptionKey: credentials.subscriptionKey,
+										instanceType: credentials.instanceType,
+										schedulerType: 'PullData',
+										requestType: 'Source',
+										endpointCode: credentials.endpointCode,
 									},
-									timestamp: new Date().toISOString(),
-								};
-								// Don't continue with Business Central operations if no data
-								const executionData = this.helpers.constructExecutionMetaData(
-									this.helpers.returnJsonArray(responseData),
-									{ itemData: { item: i } }
-								);
-								returnData.push(...executionData);
-								continue; // Skip to next iteration
-							}
+								},
+								json: true,
+							});
 
-							// Step 5: Create customers in Business Central and prepare push response data
-							const results = [];
-							const pushResponseData = [];
-							
-							// Create a mapping of customer data to original pulled data for messageId and sourceId
-							const customerToPulledDataMap = new Map();
-							if (customerData && Array.isArray(customerData)) {
-								customerData.forEach((pulledItem) => {
-									// Use email or reference as key to match with transformed customer
-									const key = pulledItem.email || pulledItem.reference;
-									if (key) {
-										customerToPulledDataMap.set(key, {
-											messageId: pulledItem.messageId,
-											sourceId: pulledItem.sourceId
-										});
-									}
-								});
-							}
-							
-							for (const transformedCustomer of transformedCustomers) {
-								try {
-									// Get Business Central OAuth token
-									const tenantId = credentials.tenantId as string;
-									const clientId = credentials.clientIdBC as string;
-									const clientSecret = credentials.clientSecretBC as string;
-									
-									const tokenRequestBody = new URLSearchParams({
-										grant_type: 'client_credentials',
-										client_id: String(clientId),
-										client_secret: String(clientSecret),
-										scope: 'https://api.businesscentral.dynamics.com/.default'
-									});
+							const schedulerId = schedulerResponse.schedulerId;
 
-									const bcTokenResponse = await this.helpers.httpRequest({
-										method: 'POST',
-										url: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
-										headers: {
-											'Content-Type': 'application/x-www-form-urlencoded',
-										},
-										body: tokenRequestBody.toString(),
-										json: false,
-									});
+							// Step 3: Call Pull Data API
+							const requestBody = {
+								Context: {
+									ClientId: credentials.clientId,
+									SubscriptionKey: credentials.subscriptionKey,
+									InstanceType: credentials.instanceType,
+									EndpointCode: credentials.endpointCode,
+									isNotEncrypted: true,
+									SchedulerType: 'PullData',
+									RequestType: 'Source',
+									SchedulerId: schedulerId,
+								},
+								RequestData: requestData,
+								PacketSize: packetSize,
+								type: pullDataType || null,
+							};
 
-									const tokenData = typeof bcTokenResponse === 'string' ? JSON.parse(bcTokenResponse) : bcTokenResponse;
-									const bcAccessToken = tokenData.access_token;
-
-									// Get company ID - Use environment from credentials instead of parameter
-									const environment = credentials.environment as string || 'N8N';
-									const companiesResponse = await this.helpers.httpRequest({
-										method: 'GET',
-										url: `https://api.businesscentral.dynamics.com/v2.0/${tenantId}/${environment}/api/v2.0/companies`,
-										headers: {
-											'Authorization': `Bearer ${bcAccessToken}`,
-											'Content-Type': 'application/json',
-										},
-										json: true,
-									});
-
-									const companies = companiesResponse.value || companiesResponse;
-									const companyId = companies[0]?.id;
-
-									// Create customer in Business Central
-									const createCustomerUrl = `https://api.businesscentral.dynamics.com/v2.0/${tenantId}/${environment}/api/v2.0/companies(${companyId})/customers`;
-									
-									const customerResponse = await this.helpers.httpRequest({
-										method: 'POST',
-										url: createCustomerUrl,
-										headers: {
-											'Authorization': `Bearer ${bcAccessToken}`,
-											'Content-Type': 'application/json',
-										},
-										body: transformedCustomer,
-										json: true,
-									});
-
-									// Get original pulled data for this customer
-									const customerKey = transformedCustomer.email || transformedCustomer.reference;
-									const pulledData = customerToPulledDataMap.get(customerKey);
-									
-									// Map BC response to Push Response format
-									const pushResponseItem = {
-										sourceId: pulledData?.sourceId || transformedCustomer.reference || '',
-										targetId: customerResponse.number || customerResponse.id || '',
-										reference: customerResponse.number || '',
-										message: `Customer created successfully in Business Central with number: ${customerResponse.number}`,
-										result: true,
-										inputData: JSON.stringify(transformedCustomer),
-										messageId: pulledData?.messageId || 0,
-										statusId: 1, // Success status
-										lastSyncTime: new Date().toISOString(),
-										additionalProp1: customerResponse.displayName || '',
-										additionalProp2: customerResponse.email || '',
-										additionalProp3: customerResponse.id || '',
-									};
-
-									pushResponseData.push(pushResponseItem);
-
-									results.push({
-										success: true,
-										originalData: transformedCustomer.reference || transformedCustomer.email,
-										transformedData: transformedCustomer,
-										bcResponse: customerResponse,
-										pushResponseMapping: pushResponseItem,
-									});
-
-								} catch (customerError) {
-									// Get original pulled data for this customer (for error case too)
-									const customerKey = transformedCustomer.email || transformedCustomer.reference;
-									const pulledData = customerToPulledDataMap.get(customerKey);
-									
-									// Create error response for push response
-									const errorPushResponseItem = {
-										sourceId: pulledData?.sourceId || transformedCustomer.reference || '',
-										targetId: '',
-										reference: '',
-										message: `Error creating customer in Business Central: ${(customerError as Error).message}`,
-										result: false,
-										inputData: JSON.stringify(transformedCustomer),
-										messageId: pulledData?.messageId || 0,
-										statusId: 0, // Error status
-										lastSyncTime: new Date().toISOString(),
-										additionalProp1: '',
-										additionalProp2: '',
-										additionalProp3: '',
-									};
-
-									pushResponseData.push(errorPushResponseItem);
-
-									results.push({
-										success: false,
-										originalData: transformedCustomer.reference || transformedCustomer.email,
-										transformedData: transformedCustomer,
-										error: (customerError as Error).message,
-										pushResponseMapping: errorPushResponseItem,
-									});
-								}
-							}
-
-							// Step 6: Push Response back to i95Dev API
-							let pushResponseResult = null;
-							if (pushResponseData.length > 0) {
-								try {
-									// Get new scheduler ID for push response
-									const pushSchedulerResponse = await this.helpers.httpRequest({
-										method: 'POST',
-										url: `${credentials.baseUrl}/api/Index`,
-										headers: {
-											'Authorization': `Bearer ${bearerToken}`,
-											'Content-Type': 'application/json',
-										},
-										body: {
-											context: {
-												clientId: credentials.clientId,
-												subscriptionKey: credentials.subscriptionKey,
-												instanceType: credentials.instanceType,
-												schedulerType: 'PushResponse',
-												requestType: 'Source',
-												endpointCode: credentials.endpointCodeBC,
-											},
-										},
-										json: true,
-									});
-
-									const pushSchedulerId = pushSchedulerResponse.schedulerId;
-
-									// Push response data
-									const pushRequestBody = {
-										context: {
-											clientId: credentials.clientId,
-											subscriptionKey: credentials.subscriptionKey,
-											instanceType: credentials.instanceType,
-											schedulerType: 'PushResponse',
-											endPointCode: credentials.endpointCodeBC,
-											schedulerId: pushSchedulerId,
-											isNotEncrypted: true,
-										},
-										packetSize: packetSize,
-										requestData: pushResponseData,
-									};
-
-									pushResponseResult = await this.helpers.httpRequest({
-										method: 'POST',
-										url: `${credentials.baseUrl}/api/Customer/PushResponse`,
-										headers: {
-											'Authorization': `Bearer ${bearerToken}`,
-											'Content-Type': 'application/json',
-										},
-										body: pushRequestBody,
-										json: true,
-									});
-
-								} catch (pushError) {
-									pushResponseResult = {
-										error: `Failed to push response: ${(pushError as Error).message}`,
-										success: false,
-									};
-								}
-							}
+							const response = await this.helpers.httpRequest({
+								method: 'POST',
+								url: `${credentials.baseUrl}/api/${dataType}/PullData`,
+								headers: {
+									'Authorization': `Bearer ${bearerToken}`,
+									'Content-Type': 'application/json',
+								},
+								body: requestBody,
+								json: true,
+							});
 
 							responseData = {
 								success: true,
-								message: `Processed ${transformedCustomers.length} customers from i95Dev API and pushed response back`,
-								pulledData: pullResponse,
-								transformedData: transformedCustomers,
-								businessCentralResults: results,
-								pushResponseData: pushResponseData,
-								pushResponseResult: pushResponseResult,
-								successCount: results.filter(r => r.success).length,
-								errorCount: results.filter(r => !r.success).length,
+								message: `i95Dev API - ${dataType} Data Pulled Successfully`,
+								apiResponse: response,
+								bearerToken: bearerToken.substring(0, 20) + '...', // Show partial token for debugging
+								schedulerId: schedulerId,
+								requestBody,
+								timestamp: new Date().toISOString(),
+							};
+						} catch (apiError) {
+							responseData = {
+								success: false,
+								message: `i95Dev API - Error pulling ${dataType} data`,
+								error: (apiError as Error).message,
+								timestamp: new Date().toISOString(),
+							};
+						}
+					} else if (['pushProductData', 'pushCustomerData', 'pushSalesOrderData', 'pushInvoiceData', 'pushShipmentData', 'pushInventoryData'].includes(operation)) {
+						// Determine data type based on operation
+						let dataType = '';
+						switch (operation) {
+							case 'pushProductData': dataType = 'Product'; break;
+							case 'pushCustomerData': dataType = 'Customer'; break;
+							case 'pushSalesOrderData': dataType = 'SalesOrder'; break;
+							case 'pushInvoiceData': dataType = 'Invoice'; break;
+							case 'pushShipmentData': dataType = 'Shipment'; break;
+							case 'pushInventoryData': dataType = 'Inventory'; break;
+						}
+
+						// Execute push data operation inline
+						const credentials = await this.getCredentials('i95DevApi');
+						const packetSize = this.getNodeParameter('packetSize', i) as number;
+						const pushRequestDataString = this.getNodeParameter('pushRequestData', i) as string;
+						const pushType = this.getNodeParameter('pushType', i) as string;
+
+						let pushRequestData = [];
+						try {
+							pushRequestData = JSON.parse(pushRequestDataString);
+						} catch (error) {
+							pushRequestData = [];
+						}
+
+						try {
+							// Step 1: Get Bearer Token using Refresh Token
+							const tokenResponse = await this.helpers.httpRequest({
+								method: 'POST',
+								url: `${credentials.baseUrl}/api/client/Token`,
+								headers: {
+									'Content-Type': 'application/json',
+								},
+								body: {
+									refreshToken: credentials.refreshToken,
+								},
+								json: true,
+							});
+
+							const bearerToken = tokenResponse.accessToken.token;
+
+							// Step 2: Get Scheduler ID for PushData
+							const schedulerResponse = await this.helpers.httpRequest({
+								method: 'POST',
+								url: `${credentials.baseUrl}/api/Index`,
+								headers: {
+									'Authorization': `Bearer ${bearerToken}`,
+									'Content-Type': 'application/json',
+								},
+								body: {
+									context: {
+										clientId: credentials.clientId,
+										subscriptionKey: credentials.subscriptionKey,
+										instanceType: credentials.instanceType,
+										schedulerType: 'PushData',
+										requestType: 'Source',
+										endpointCode: credentials.endpointCode,
+									},
+								},
+								json: true,
+							});
+
+							const schedulerId = schedulerResponse.schedulerId;
+
+							// Step 3: Call Push Product Data API
+							const requestBody = {
+								Context: {
+									ClientId: credentials.clientId,
+									SubscriptionKey: credentials.subscriptionKey,
+									InstanceType: credentials.instanceType,
+									EndpointCode: credentials.endpointCode,
+									isNotEncrypted: true,
+									SchedulerType: 'PushData',
+									RequestType: 'Source',
+									SchedulerId: schedulerId,
+								},
+								RequestData: pushRequestData,
+								PacketSize: packetSize,
+								type: pushType || null,
+							};
+
+							const response = await this.helpers.httpRequest({
+								method: 'POST',
+								url: `${credentials.baseUrl}/api/${dataType}/PushData`,
+								headers: {
+									'Authorization': `Bearer ${bearerToken}`,
+									'Content-Type': 'application/json',
+								},
+								body: requestBody,
+								json: true,
+							});
+
+							responseData = {
+								success: true,
+								message: `i95Dev API - ${dataType} Data Pushed Successfully`,
+								apiResponse: response,
+								bearerToken: bearerToken.substring(0, 20) + '...', // Show partial token for debugging
+								schedulerId: schedulerId,
+								requestBody,
+								timestamp: new Date().toISOString(),
+							};
+						} catch (apiError) {
+							responseData = {
+								success: false,
+								message: `i95Dev API - Error pushing ${dataType} data`,
+								error: (apiError as Error).message,
+								timestamp: new Date().toISOString(),
+							};
+						}
+					} else if (['pullProductResponse', 'pullCustomerResponse', 'pullSalesOrderResponse', 'pullInvoiceResponse', 'pullShipmentResponse', 'pullInventoryResponse'].includes(operation)) {
+						// Determine data type based on operation
+						let dataType = '';
+						switch (operation) {
+							case 'pullProductResponse': dataType = 'Product'; break;
+							case 'pullCustomerResponse': dataType = 'Customer'; break;
+							case 'pullSalesOrderResponse': dataType = 'SalesOrder'; break;
+							case 'pullInvoiceResponse': dataType = 'Invoice'; break;
+							case 'pullShipmentResponse': dataType = 'Shipment'; break;
+							case 'pullInventoryResponse': dataType = 'Inventory'; break;
+						}
+
+						// Execute pull response operation inline
+						const credentials = await this.getCredentials('i95DevApi');
+						const packetSize = this.getNodeParameter('packetSize', i) as number;
+						const pullResponseRequestDataString = this.getNodeParameter('pullResponseRequestData', i) as string;
+						const pullResponseType = this.getNodeParameter('pullResponseType', i) as string;
+
+						let pullResponseRequestData = [];
+						try {
+							pullResponseRequestData = JSON.parse(pullResponseRequestDataString);
+						} catch (error) {
+							pullResponseRequestData = [];
+						}
+
+						try {
+							// Step 1: Get Bearer Token using Refresh Token
+							const tokenResponse = await this.helpers.httpRequest({
+								method: 'POST',
+								url: `${credentials.baseUrl}/api/client/Token`,
+								headers: {
+									'Content-Type': 'application/json',
+								},
+								body: {
+									refreshToken: credentials.refreshToken,
+								},
+								json: true,
+							});
+
+							const bearerToken = tokenResponse.accessToken.token;
+
+							// Step 2: Get Scheduler ID
+							const schedulerResponse = await this.helpers.httpRequest({
+								method: 'POST',
+								url: `${credentials.baseUrl}/api/Index`,
+								headers: {
+									'Authorization': `Bearer ${bearerToken}`,
+									'Content-Type': 'application/json',
+								},
+								body: {
+									context: {
+										clientId: credentials.clientId,
+										subscriptionKey: credentials.subscriptionKey,
+										instanceType: credentials.instanceType,
+										schedulerType: 'PullData',
+										requestType: 'Source',
+										endpointCode: credentials.endpointCode,
+									},
+								},
+								json: true,
+							});
+
+							const schedulerId = schedulerResponse.schedulerId;
+
+							// Step 3: Call Pull Response API
+							const requestBody = {
+								Context: {
+									ClientId: credentials.clientId,
+									SubscriptionKey: credentials.subscriptionKey,
+									InstanceType: credentials.instanceType,
+									EndpointCode: credentials.endpointCode,
+									isNotEncrypted: true,
+									SchedulerType: 'PullData',
+									RequestType: 'Source',
+									SchedulerId: schedulerId,
+								},
+								RequestData: pullResponseRequestData,
+								PacketSize: packetSize,
+								type: pullResponseType || null,
+							};
+
+							const response = await this.helpers.httpRequest({
+								method: 'POST',
+								url: `${credentials.baseUrl}/api/${dataType}/PullData`,
+								headers: {
+									'Authorization': `Bearer ${bearerToken}`,
+									'Content-Type': 'application/json',
+								},
+								body: requestBody,
+								json: true,
+							});
+
+							responseData = {
+								success: true,
+								message: `i95Dev API - ${dataType} Response Pulled Successfully`,
+								apiResponse: response,
+								bearerToken: bearerToken.substring(0, 20) + '...', // Show partial token for debugging
+								schedulerId: schedulerId,
+								requestBody,
+								timestamp: new Date().toISOString(),
+							};
+						} catch (apiError) {
+							responseData = {
+								success: false,
+								message: `i95Dev API - Error pulling ${dataType} response`,
+								error: (apiError as Error).message,
+								timestamp: new Date().toISOString(),
+							};
+						}
+					} else if (['pushProductResponse', 'pushCustomerResponse', 'pushSalesOrderResponse', 'pushInvoiceResponse', 'pushShipmentResponse', 'pushInventoryResponse'].includes(operation)) {
+						// Determine data type based on operation
+						let dataType = '';
+						switch (operation) {
+							case 'pushProductResponse': dataType = 'Product'; break;
+							case 'pushCustomerResponse': dataType = 'Customer'; break;
+							case 'pushSalesOrderResponse': dataType = 'SalesOrder'; break;
+							case 'pushInvoiceResponse': dataType = 'Invoice'; break;
+							case 'pushShipmentResponse': dataType = 'Shipment'; break;
+							case 'pushInventoryResponse': dataType = 'Inventory'; break;
+						}
+
+						// Execute push response operation inline
+						const credentials = await this.getCredentials('i95DevApi');
+						const packetSize = this.getNodeParameter('packetSize', i) as number;
+						const pushResponseRequestDataString = this.getNodeParameter('pushResponseRequestData', i) as string;
+						const pushResponseType = this.getNodeParameter('pushResponseType', i) as string;
+
+						let pushResponseRequestData = [];
+						try {
+							pushResponseRequestData = JSON.parse(pushResponseRequestDataString);
+						} catch (error) {
+							pushResponseRequestData = [];
+						}
+
+						try {
+							// Step 1: Get Bearer Token using Refresh Token
+							const tokenResponse = await this.helpers.httpRequest({
+								method: 'POST',
+								url: `${credentials.baseUrl}/api/client/Token`,
+								headers: {
+									'Content-Type': 'application/json',
+								},
+								body: {
+									refreshToken: credentials.refreshToken,
+								},
+								json: true,
+							});
+
+							const bearerToken = tokenResponse.accessToken.token;
+
+							// Step 2: Get Scheduler ID
+							const schedulerResponse = await this.helpers.httpRequest({
+								method: 'POST',
+								url: `${credentials.baseUrl}/api/Index`,
+								headers: {
+									'Authorization': `Bearer ${bearerToken}`,
+									'Content-Type': 'application/json',
+								},
+								body: {
+									context: {
+										clientId: credentials.clientId,
+										subscriptionKey: credentials.subscriptionKey,
+										instanceType: credentials.instanceType,
+										schedulerType: 'PushData',
+										requestType: 'Source',
+										endpointCode: credentials.endpointCode,
+									},
+								},
+								json: true,
+							});
+
+							const schedulerId = schedulerResponse.schedulerId;
+
+							// Step 3: Call Push Response API
+							const requestBody = {
+								context: {
+									clientId: credentials.clientId,
+									subscriptionKey: credentials.subscriptionKey,
+									instanceType: credentials.instanceType,
+									schedulerType: 'PushData',
+									endPointCode: credentials.endpointCode,
+									schedulerId: schedulerId,
+									isNotEncrypted: true,
+								},
+								packetSize: packetSize,
+								requestData: pushResponseRequestData,
+							};
+
+							const response = await this.helpers.httpRequest({
+								method: 'POST',
+								url: `${credentials.baseUrl}/api/${dataType}/PushResponse`,
+								headers: {
+									'Authorization': `Bearer ${bearerToken}`,
+									'Content-Type': 'application/json',
+								},
+								body: requestBody,
+								json: true,
+							});
+
+							responseData = {
+								success: true,
+								message: `i95Dev API - ${dataType} Response Pushed Successfully`,
+								apiResponse: response,
+								bearerToken: bearerToken.substring(0, 20) + '...', // Show partial token for debugging
+								schedulerId: schedulerId,
+								requestBody,
+								timestamp: new Date().toISOString(),
+							};
+						} catch (apiError) {
+							responseData = {
+								success: false,
+								message: `i95Dev API - Error pushing ${dataType} response`,
+								error: (apiError as Error).message,
+								timestamp: new Date().toISOString(),
+							};
+						}
+					}
+				} else if (resource === 'bcactions') {
+					if (operation === 'createCustomer') {
+						try {
+							// Get Business Central credentials
+							const credentials = await this.getCredentials('i95DevApi');
+							const tenantId = credentials.tenantId as string;
+							const clientId = credentials.clientIdBC as string;
+							const clientSecret = credentials.clientSecretBC as string;
+
+							if (!tenantId || !clientId || !clientSecret) {
+								throw new Error('Business Central credentials (Tenant ID, Client ID BC, Client Secret BC) are required');
+							}
+
+							// Get OAuth token for Business Central
+							const tokenRequestBody = new URLSearchParams({
+								grant_type: 'client_credentials',
+								client_id: String(clientId),
+								client_secret: String(clientSecret),
+								scope: 'https://api.businesscentral.dynamics.com/.default'
+							});
+
+							const tokenResponse = await this.helpers.httpRequest({
+								method: 'POST',
+								url: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
+								headers: {
+									'Content-Type': 'application/x-www-form-urlencoded',
+								},
+								body: tokenRequestBody.toString(),
+								json: false,
+							});
+
+							let bcAccessToken;
+							try {
+								const tokenData = typeof tokenResponse === 'string' ? JSON.parse(tokenResponse) : tokenResponse;
+								bcAccessToken = tokenData.access_token;
+							} catch (parseError) {
+								throw new Error(`Failed to parse token response: ${(parseError as Error).message}`);
+							}
+
+							if (!bcAccessToken) {
+								throw new Error('Failed to obtain access token from Microsoft OAuth endpoint');
+							}
+
+							// Store access token and call Business Central companies API
+							const environment = credentials.environment as string || 'N8N';
+							const bcApiUrl = `https://api.businesscentral.dynamics.com/v2.0/${tenantId}/${environment}/api/v2.0/companies`;
+
+							// Get company details using the access token
+							const companiesResponse = await this.helpers.httpRequest({
+								method: 'GET',
+								url: bcApiUrl,
+								headers: {
+									'Authorization': `Bearer ${bcAccessToken}`,
+									'Content-Type': 'application/json',
+								},
+								json: true,
+							});
+
+							const companies = companiesResponse.value || companiesResponse;
+							const firstCompany = companies[0];
+							const companyId = firstCompany ? firstCompany.id : null;
+
+							if (!companyId) {
+								throw new Error('No company found to create customer in');
+							}
+
+							// Get customer data from JSON input
+							const customerDataString = this.getNodeParameter('customerDataJson', i) as string;
+							let customerData;
+							try {
+								customerData = JSON.parse(customerDataString);
+							} catch (parseError) {
+								throw new Error(`Invalid JSON in customer data: ${(parseError as Error).message}`);
+							}
+
+							// Create customer using the company ID
+							const createCustomerUrl = `https://api.businesscentral.dynamics.com/v2.0/${tenantId}/${environment}/api/v2.0/companies(${companyId})/customers`;
+							
+							const customerResponse = await this.helpers.httpRequest({
+								method: 'POST',
+								url: createCustomerUrl,
+								headers: {
+									'Authorization': `Bearer ${bcAccessToken}`,
+									'Content-Type': 'application/json',
+								},
+								body: customerData,
+								json: true,
+							});
+
+							responseData = {
+								success: true,
+								message: 'Customer created successfully',
+								customer: customerResponse,
+								companyId: companyId,
+								companyName: firstCompany.name,
 								timestamp: new Date().toISOString(),
 							};
 
 						} catch (apiError) {
 							responseData = {
 								success: false,
-								message: 'i95Dev API - Error in create customer workflow',
+								message: 'Failed to get access token',
 								error: (apiError as Error).message,
 								timestamp: new Date().toISOString(),
 							};
